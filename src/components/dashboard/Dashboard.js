@@ -13,8 +13,6 @@ import {
   CFormInput,
   CModal,
   CModalBody,
-  CModalFooter,
-  CModalTitle,
   CModalHeader,
 } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
@@ -22,54 +20,20 @@ import CIcon from "@coreui/icons-react";
 import { cilPen, cilTrash } from "@coreui/icons";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import Navbar from "../Navbar";
+import Header from "../Header";
 import { useSelector } from "react-redux";
 import swal from "@sweetalert/with-react";
+import { GetData } from "../../helpers/global";
+import EditModal from "../modals/EditModal";
 
 const Dashboard = () => {
   const [items, setItems] = useState();
+
   const [visible, setVisible] = useState(false);
   const [toggle, setToggle] = useState(false);
   const [id, setId] = useState();
-  const [name, setName] = useState();
-  const [price, setPrice] = useState();
-  const [imageurl, setImageUrl] = useState();
 
   const token = useSelector((state) => state.tokenUser);
-
-  // get data
-  const getData = async () => {
-    try {
-      await axios
-        .get("https://test-binar.herokuapp.com/v1/products", {
-          headers: {
-            Authorization: `Bearer ${token.tokenUser.access_token}`,
-          },
-        })
-        .then((res) => setItems(res.data.result));
-    } catch (error) {}
-  };
-
-  // update data
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      await axios
-        .put(
-          `https://test-binar.herokuapp.com/v1/products/${id}`,
-          { name, price, imageurl },
-          {
-            headers: {
-              Authorization: `Bearer ${token.tokenUser.access_token}`,
-            },
-          }
-        )
-        .then((data) => console.log(data));
-    } catch (error) {
-      console.log(error);
-    }
-    setVisible(!visible);
-  };
 
   // delete data
   const handleDelete = async (e) => {
@@ -105,12 +69,12 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    getData();
+    GetData(token.tokenUser.access_token).then((data) => setItems(data));
   }, []);
 
   return (
     <>
-      <Navbar />
+      <Header />
       <CContainer>
         <CRow>
           {items
@@ -159,60 +123,7 @@ const Dashboard = () => {
             : " No data"}
         </CRow>
       </CContainer>
-      <>
-        <CModal visible={visible} onClose={() => setVisible(false)}>
-          <CModalHeader onClose={() => setVisible(false)}>
-            <CModalTitle>Edit Product</CModalTitle>
-          </CModalHeader>
 
-          <CModalBody>
-            {" "}
-            <CForm className="border p-5" onSubmit={handleUpdate}>
-              <CFormInput
-                className="mb-3"
-                type="hidden"
-                id="id"
-                value={id}
-                placeholder="Product Name"
-              />
-              <CFormInput
-                className="mb-3"
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Product Name"
-              />
-              <CFormInput
-                className="mb-3"
-                type="text"
-                id="price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="Price (Dollar USD)"
-              />
-              <CFormInput
-                className="mb-3"
-                type="text"
-                id="imageurl"
-                value={imageurl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Image url"
-              />
-
-              <CModalFooter>
-                <CButton color="" onClick={() => setVisible(false)}>
-                  Back
-                </CButton>
-
-                <CButton color="secondary" type="submit">
-                  Update
-                </CButton>
-              </CModalFooter>
-            </CForm>
-          </CModalBody>
-        </CModal>
-      </>
       <>
         <CModal visible={toggle} onClose={() => setToggle(false)}>
           <CModalHeader onClose={() => setToggle(false)}></CModalHeader>
@@ -230,6 +141,7 @@ const Dashboard = () => {
           </CModalBody>
         </CModal>
       </>
+      <EditModal visible={visible} onClick={setVisible} />
     </>
   );
 };
